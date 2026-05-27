@@ -1,0 +1,35 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from routes.detect import router as detect_router
+from utils.cache import init_cache
+from routes.admin import router as admin_router
+
+app = FastAPI()
+from backend.utils.database import init_db
+
+@app.on_event("startup")
+def startup_event():
+    init_db()
+    print("✅ Database initialized on startup")
+init_cache()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "https://misinfo-shield-one.vercel.app",
+        "*"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(detect_router)
+app.include_router(admin_router)
+@app.get("/")
+def home():
+    return {"message": "Misinformation Shield API is running 🚀"}
+
+
+
